@@ -17,11 +17,7 @@ type ToDo struct {
 
 func main() {
 
-	fmt.Println("Go Air is helping to reload my Go App............new needed.")
-	// testNumber := 35476
-
-	// var add *int = &testNumber //this is how address is fetching. Means value of add is memory address of testNumber
-	// fmt.Println(add)
+	fmt.Println("App starting..")
 
 	app := fiber.New()
 
@@ -30,7 +26,6 @@ func main() {
 		log.Fatal("Error Loading .env file")
 	}
 	PORT := os.Getenv("PORT")
-
 
 
 	todos := []ToDo{} // main array to store the todos
