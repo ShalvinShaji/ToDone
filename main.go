@@ -53,7 +53,7 @@ func main() {
 	app.GET("/api/todos", getTodo)
 	app.POST("/api/todos", createTodo)
 	app.PATCH("/api/todos/:id", updateTodo)
-	// app.DELETE("/api/todos/:id", deleteTodo)
+	app.DELETE("/api/todos/:id", deleteTodo)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -124,6 +124,21 @@ func updateTodo(c *gin.Context) {
 	c.JSON(200, gin.H{"success": true})
 }
 
-// func deleteTodos(c *gin.Context) error{
+func deleteTodo(c *gin.Context){
+	id := c.Param("id")
+	// Create a filter to find the todo by its ID
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid request"})
+		return
+	}
 
-// }
+	filter := bson.M{"_id": objectId}
+	// Update the todo body in the database
+	_ , err = collection.DeleteOne(context.Background(), filter)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to delete todo"})
+		return
+	}
+	c.JSON(200, gin.H{"success": true})
+}
