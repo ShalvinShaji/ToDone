@@ -132,9 +132,8 @@ func deleteTodo(c *gin.Context){
 		c.JSON(400, gin.H{"error": "Invalid request"})
 		return
 	}
-
 	filter := bson.M{"_id": objectId}
-	// Update the todo body in the database
+	// Delete the todo from the database
 	_ , err = collection.DeleteOne(context.Background(), filter)
 	if err != nil {
 		c.JSON(500, gin.H{"error": "Failed to delete todo"})
