@@ -50,10 +50,10 @@ func main() {
 	collection = client.Database("todone_db").Collection("todos")
 
 	app := gin.Default()
-	app.GET("/api/todos", getTodos)
-	app.POST("/api/todos", createTodos)
-	// app.PATCH("/api/todos/:id", updateTodos)
-	// app.DELETE("/api/todos/:id", deleteTodos)
+	app.GET("/api/todos", getTodo)
+	app.POST("/api/todos", createTodo)
+	app.PATCH("/api/todos/:id", updateTodo)
+	app.DELETE("/api/todos/:id", deleteTodo)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -63,7 +63,7 @@ func main() {
 
 }
 
-func getTodos(c *gin.Context) {
+func getTodo(c *gin.Context) {
 	var todos []Todo
 	cursor, err := collection.Find(context.Background(), bson.M{})
 
@@ -84,7 +84,7 @@ func getTodos(c *gin.Context) {
 	c.JSON(200, todos)
 }
 
-func createTodos(c *gin.Context) {
+func createTodo(c *gin.Context) {
 	todo := new(Todo)
 	if err := c.ShouldBindJSON(todo); err != nil {
 		c.JSON(500, gin.H{"Error": err.Error()})
@@ -102,9 +102,42 @@ func createTodos(c *gin.Context) {
 
 }
 
-// func updateTodos(c *gin.Context) error{
+func updateTodo(c *gin.Context) {
+	id := c.Param("id")
 
-// }
-// func deleteTodos(c *gin.Context) error{
+	// Create a filter to find the todo by its ID
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid request"})
+		return
+	}
 
-// }
+	filter := bson.M{"_id": objectId}
+	update := bson.M{"$set": bson.M{"completed": true}}
+	// Update the todo body in the database
+	_ , err = collection.UpdateOne(context.Background(), filter, update)
+
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to update todo"})
+		return
+	}
+	c.JSON(200, gin.H{"success": true})
+}
+
+func deleteTodo(c *gin.Context){
+	id := c.Param("id")
+	// Create a filter to find the todo by its ID
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid request"})
+		return
+	}
+	filter := bson.M{"_id": objectId}
+	// Delete the todo from the database
+	_ , err = collection.DeleteOne(context.Background(), filter)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to delete todo"})
+		return
+	}
+	c.JSON(200, gin.H{"success": true})
+}
