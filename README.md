@@ -1,1 +1,1 @@
-Todo application using React for the frontend and Go with the Fiber framework for the backend. 
+Todo application using React for the frontend and Go with the Gin framework for the backend. 
