@@ -1,86 +1,110 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type ToDo struct {
-	ID        int    `json:"id"`
-	Completed bool   `json:"completed"`
-	Body      string `json:"body"`
+type Todo struct {
+	ID        primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
+	Completed bool               `json:"completed"`
+	Body      string             `json:"body"`
 }
+
+var collection *mongo.Collection
 
 func main() {
 
-	fmt.Println("App starting..")
-
-	app := fiber.New()
+	fmt.Println("App started..")
 
 	err := godotenv.Load(".env")
-	if err!=nil{
-		log.Fatal("Error Loading .env file")
+	if err != nil {
+		log.Fatal("Error Loading .env file", err)
 	}
-	PORT := os.Getenv("PORT")
 
+	MONGODB_URI := os.Getenv("MONGODB_URI")
+	clientOptions := options.Client().ApplyURI(MONGODB_URI)
+	client, err := mongo.Connect(context.Background(), clientOptions)
+	if err != nil {
 
-	todos := []ToDo{} // main array to store the todos
-	fmt.Println(todos)
+		log.Fatal(err)
+	}
 
-	//Get ToDos
-	app.Get("/api/todos/", func(c *fiber.Ctx) error {
-		return c.Status(200).JSON(todos)
-	})
+	defer client.Disconnect(context.Background())
 
-	//Post ToDos
-	app.Post("/api/todos", func(c *fiber.Ctx) error {
-		todo := &ToDo{}
-		c.BodyParser(todo)
+	err = client.Ping(context.Background(), nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Connected to Mongo db")
 
-		if err := c.BodyParser(todo); err != nil {
-			return err
-		}
-		if todo.Body == "" {
-			return c.Status(400).JSON(fiber.Map{"Error": "TODO Body is required"}) // if todo body is null throw error
-		}
+	collection = client.Database("todone_db").Collection("todos")
 
-		todo.ID = len(todos) + 1     // increament the todo id by 1
-		todos = append(todos, *todo) // append new todo to todos list
+	app := gin.Default()
+	app.GET("/api/todos", getTodos)
+	app.POST("/api/todos", createTodos)
+	// app.PATCH("/api/todos/:id", updateTodos)
+	// app.DELETE("/api/todos/:id", deleteTodos)
 
-		return c.Status(201).JSON(todo)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "4000"
+	}
+	log.Fatal(app.Run("0.0.0.0:" + port))
 
-	})
-
-	//Update Todos
-	app.Patch("/api/todos/:id", func(c *fiber.Ctx) error {
-		id := c.Params("id")
-
-		for i, todo := range todos {
-			if fmt.Sprint(todo.ID) == id {
-				todos[i].Body = fmt.Sprint(c.Body())
-				return c.Status(200).JSON(todos[i])
-			}
-		}
-		return c.Status(404).JSON(fiber.Map{"error": "Todo Not found"})
-	})
-
-	//Delete a todo
-	app.Delete("/api/todos/:id", func(c *fiber.Ctx) error {
-		id := c.Params("id")
-
-		for i, todo := range todos {
-			if fmt.Sprint(todo.ID) == id {
-				todos = append(todos[:i], todos[i+1:]...)
-				return c.Status(200).JSON(fiber.Map{"success": true})
-			}
-		}
-		return c.Status(404).JSON(fiber.Map{"error": "Todo cannot be deleted."})
-	})
-
-	//port
-	log.Fatal(app.Listen(":" + PORT))
 }
+
+func getTodos(c *gin.Context) {
+	var todos []Todo
+	cursor, err := collection.Find(context.Background(), bson.M{})
+
+	if err != nil {
+		c.JSON(500, gin.H{"Error": err.Error()})
+	}
+
+	defer cursor.Close(context.Background())
+
+	for cursor.Next(context.Background()) {
+		var todo Todo
+		if err := cursor.Decode(&todo); err != nil {
+			c.JSON(500, gin.H{"Error": err.Error()})
+		}
+
+		todos = append(todos, todo)
+	}
+	c.JSON(200, todos)
+}
+
+func createTodos(c *gin.Context) {
+	todo := new(Todo)
+	if err := c.ShouldBindJSON(todo); err != nil {
+		c.JSON(500, gin.H{"Error": err.Error()})
+	}
+	if todo.Body == "" {
+		c.JSON(400, gin.H{"error": "Todo body cannot be empty "})
+	}
+	insertResult, err := collection.InsertOne(context.Background(), todo)
+	if err != nil {
+		c.JSON(500, gin.H{"Error": err.Error()})
+	}
+	todo.ID = insertResult.InsertedID.(primitive.ObjectID)
+
+	c.JSON(201, todo)
+
+}
+
+// func updateTodos(c *gin.Context) error{
+
+// }
+// func deleteTodos(c *gin.Context) error{
+
+// }
