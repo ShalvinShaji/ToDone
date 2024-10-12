@@ -16,7 +16,7 @@ const Taskbox = () => {
   } = useQuery({
     queryKey: ["todos"],
     queryFn: async () => {
-      const res = await fetch({ BASE_URL } + "/todos");
+      const res = await fetch(BASE_URL + "/todos");
       if (!res.ok) {
         throw new Error("Network response was not ok");
       }
@@ -28,7 +28,7 @@ const Taskbox = () => {
   // Mutation for deleting a task
   const deleteTaskMutation = useMutation({
     mutationFn: async (id) => {
-      const response = await fetch({ BASE_URL } + `/todos/${id}`, {
+      const response = await fetch(BASE_URL  + `/todos/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -47,7 +47,7 @@ const Taskbox = () => {
   // Mutation for completing a task
   const completeTaskMutation = useMutation({
     mutationFn: async (id) => {
-      const response = await fetch({ BASE_URL } + `/todos/${id}`, {
+      const response = await fetch(BASE_URL  + `/todos/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
