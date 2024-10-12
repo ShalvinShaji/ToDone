@@ -55,6 +55,9 @@ func main() {
 
 	if os.Getenv("ENV") == "production" {
 		app.Static("/static", "./TodoneUI/dist")
+		app.NoRoute(func(c *gin.Context) {
+			c.File("./TodoneUI/dist/index.html")
+		})
 	}
 
 	app.GET("/api/todos", getTodo)
