@@ -29,9 +29,7 @@ const Navbar = () => {
         <a className="text-xl">ToDone</a>
       </div>
       <div className=" flex flex-col justify-center items-center p-2 bg-base-100">
-        <h1 className="hero-greet text-2xl md:text-3xl lg:text-4xl">
-          {greeting}<span className="hero-wave">👋</span>
-        </h1>
+        <i className=" text-lg ">"Progress, not perfection." - Anonymous</i>
 
         <i>Today, {date}</i>
       </div>
