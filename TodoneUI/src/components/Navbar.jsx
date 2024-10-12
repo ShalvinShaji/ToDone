@@ -3,15 +3,11 @@ import noImage from "../../public/assets/no_image.svg";
 
 const Navbar = () => {
   return (
-    <div className="navbar flex-row	 justify-around bg-base-100">
+    <div className=" navbar flex-row	justify-between bg-base-100 p-2">
       <div>
         <a className="btn btn-ghost text-xl">ToDone</a>
       </div>
-      <div>
-        <a className="text-sm">
-          " Turn plans into action, one task at a time."
-        </a>
-      </div>
+
       <div>
         <div className="dropdown dropdown-end">
           <div
