@@ -79,7 +79,7 @@ func main() {
 	}
 
 	if os.Getenv("ENV") == "production" {
-		app.Static("/", "./ToDoneUI/dist")
+		app.Static("/", "./TodoneUI/dist")
 	}
 	
 	log.Fatal(app.Run("0.0.0.0:" + port))
