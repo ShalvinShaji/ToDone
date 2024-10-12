@@ -24,14 +24,14 @@ const Modal = ({ isOpen, onClose }) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["todos"]);
-      onClose(); // Close the modal after the task is added
-      setTaskText(""); // Reset task text after adding
+      onClose();
+      setTaskText("");
     },
   });
 
   // Function to handle adding a task
   const handleAddTask = () => {
-    if (!taskText.trim()) return; // Prevent adding empty tasks
+    if (!taskText.trim()) return;
 
     const newTask = {
       body: taskText,
