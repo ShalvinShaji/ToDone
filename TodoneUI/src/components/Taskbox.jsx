@@ -1,11 +1,12 @@
 import React from "react";
 import "./Taskbox.css";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import doneIcon from "../../public/assets/doneIcon.svg";
+import binIcon from "../../public/assets/binIcon.svg";
 
 const Taskbox = () => {
   const queryClient = useQueryClient();
 
-  // Fetch tasks query
   const {
     data: tasks = [],
     isLoading,
@@ -115,7 +116,7 @@ const Taskbox = () => {
           {/* Buttons */}
           <div className="flex items-center justify-between mt-3 lg:mt-0">
             <button
-              className={`btn me-5 lg:me-0 lg:ms-5 w-[150px] ${
+              className={`btn me-5 lg:me-0 lg:ms-5 w-[180px] ${
                 task.completed
                   ? "bg-green-500 text-white"
                   : "bg-gray-500 text-white hover:bg-green-500 transition duration-200 p-2 rounded-lg"
@@ -123,12 +124,22 @@ const Taskbox = () => {
               onClick={() => completeTaskMutation.mutate(task._id)}
             >
               {task.completed ? "Task completed" : "Mark as completed"}
+              <img
+                src={doneIcon}
+                alt="add todo"
+                className="ms-1 w-[20px] height-[auto]"
+              />
             </button>
             <button
               className="btn lg:ms-3 bg-gray-500 text-white hover:bg-red-500 transition duration-200 p-2 rounded-lg"
               onClick={() => deleteTaskMutation.mutate(task._id)}
             >
-              Delete
+              Delete{" "}
+              <img
+                src={binIcon}
+                alt="add todo"
+                className="ms-1 w-[20px] height-[auto]"
+              />
             </button>
           </div>
         </div>
