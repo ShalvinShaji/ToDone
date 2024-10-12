@@ -12,7 +12,6 @@
 }
 
 .modal-content {
-  /* You can add more styles here if needed */
-  width: 100%; /* Ensure the content takes full width available */
+  width: 100%; 
   max-width: 500px; /* Default max width for the modal */
 }
