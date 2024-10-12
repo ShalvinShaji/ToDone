@@ -6,7 +6,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
@@ -53,12 +55,14 @@ func main() {
 
 	app := gin.Default()
 
-	if os.Getenv("ENV") == "production" {
-		app.Static("/static", "./TodoneUI/dist")
-		app.NoRoute(func(c *gin.Context) {
-			c.File("./TodoneUI/dist/index.html")
-		})
-	}
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173"}, // your frontend URL
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "PATCH"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	app.GET("/api/todos", getTodo)
 	app.POST("/api/todos", createTodo)

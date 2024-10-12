@@ -9,7 +9,7 @@ const Modal = ({ isOpen, onClose }) => {
 
   const addTaskMutation = useMutation({
     mutationFn: async (newTask) => {
-      const response = await fetch({ BASE_URL } + "/todos", {
+      const response = await fetch(BASE_URL + "/todos", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
