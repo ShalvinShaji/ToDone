@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./Modal.css";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { BASE_URL } from "../App";
 
 const Modal = ({ isOpen, onClose }) => {
   const queryClient = useQueryClient();
@@ -8,7 +9,7 @@ const Modal = ({ isOpen, onClose }) => {
 
   const addTaskMutation = useMutation({
     mutationFn: async (newTask) => {
-      const response = await fetch("http://localhost:4000/api/todos", {
+      const response = await fetch({ BASE_URL } + "/todos", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
