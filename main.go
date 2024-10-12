@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
@@ -28,9 +27,11 @@ func main() {
 
 	fmt.Println("App started..")
 
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error Loading .env file", err)
+	if os.Getenv("ENV") != "production" {
+		err := godotenv.Load(".env")
+		if err != nil {
+			log.Fatal("Error Loading .env file", err)
+		}
 	}
 
 	MONGODB_URI := os.Getenv("MONGODB_URI")
@@ -53,12 +54,16 @@ func main() {
 	app := gin.Default()
 
 	// CORS Configuration
-	app.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5174"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"}, 
-		AllowCredentials: true,
-	}))
+	// app.Use(cors.New(cors.Config{
+	// 	AllowOrigins:     []string{"http://localhost:5174"},
+	// 	AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+	// 	AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
+	// 	AllowCredentials: true,
+	// }))
+
+	if os.Getenv("ENV") == "production" {
+		app.Static("/", "./ToDoneUI/dist")
+	}
 
 	app.GET("/api/todos", getTodo)
 	app.POST("/api/todos", createTodo)
