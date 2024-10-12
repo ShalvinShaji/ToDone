@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
@@ -35,7 +37,6 @@ func main() {
 	clientOptions := options.Client().ApplyURI(MONGODB_URI)
 	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
-
 		log.Fatal(err)
 	}
 
@@ -45,11 +46,20 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Connected to Mongo db")
+	fmt.Println("Connected to MongoDB")
 
 	collection = client.Database("todone_db").Collection("todos")
 
 	app := gin.Default()
+
+	// CORS Configuration
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5174"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"}, 
+		AllowCredentials: true,
+	}))
+
 	app.GET("/api/todos", getTodo)
 	app.POST("/api/todos", createTodo)
 	app.PATCH("/api/todos/:id", updateTodo)
@@ -60,7 +70,6 @@ func main() {
 		port = "4000"
 	}
 	log.Fatal(app.Run("0.0.0.0:" + port))
-
 }
 
 func getTodo(c *gin.Context) {
@@ -68,76 +77,98 @@ func getTodo(c *gin.Context) {
 	cursor, err := collection.Find(context.Background(), bson.M{})
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": err.Error()})
+		return
 	}
-
 	defer cursor.Close(context.Background())
 
 	for cursor.Next(context.Background()) {
 		var todo Todo
 		if err := cursor.Decode(&todo); err != nil {
-			c.JSON(500, gin.H{"Error": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"Error": err.Error()})
+			return
 		}
-
 		todos = append(todos, todo)
 	}
-	c.JSON(200, todos)
+
+	if err := cursor.Err(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, todos)
 }
 
 func createTodo(c *gin.Context) {
 	todo := new(Todo)
 	if err := c.ShouldBindJSON(todo); err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		return
 	}
+
 	if todo.Body == "" {
-		c.JSON(400, gin.H{"error": "Todo body cannot be empty "})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Todo body cannot be empty"})
+		return
 	}
+
 	insertResult, err := collection.InsertOne(context.Background(), todo)
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": err.Error()})
+		return
 	}
+
 	todo.ID = insertResult.InsertedID.(primitive.ObjectID)
-
-	c.JSON(201, todo)
-
+	c.JSON(http.StatusCreated, todo)
 }
 
 func updateTodo(c *gin.Context) {
 	id := c.Param("id")
 
-	// Create a filter to find the todo by its ID
 	objectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		c.JSON(400, gin.H{"error": "Invalid request"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
 		return
 	}
 
 	filter := bson.M{"_id": objectId}
 	update := bson.M{"$set": bson.M{"completed": true}}
-	// Update the todo body in the database
-	_ , err = collection.UpdateOne(context.Background(), filter, update)
 
+	// Update the todo in the database
+	result, err := collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
-		c.JSON(500, gin.H{"error": "Failed to update todo"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update todo"})
 		return
 	}
-	c.JSON(200, gin.H{"success": true})
+
+	if result.ModifiedCount == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Todo not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
-func deleteTodo(c *gin.Context){
+func deleteTodo(c *gin.Context) {
 	id := c.Param("id")
-	// Create a filter to find the todo by its ID
+
 	objectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		c.JSON(400, gin.H{"error": "Invalid request"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
 		return
 	}
+
 	filter := bson.M{"_id": objectId}
-	// Delete the todo from the database
-	_ , err = collection.DeleteOne(context.Background(), filter)
+
+	result, err := collection.DeleteOne(context.Background(), filter)
 	if err != nil {
-		c.JSON(500, gin.H{"error": "Failed to delete todo"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete todo"})
 		return
 	}
-	c.JSON(200, gin.H{"success": true})
+
+	if result.DeletedCount == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Todo not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"success": true})
 }

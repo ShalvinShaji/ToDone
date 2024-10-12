@@ -7,6 +7,8 @@ const Newtask = () => {
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
 
+  
+
   return (
     <div className="new_task_btn flex justify-center items-center">
       <button

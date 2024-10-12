@@ -4,9 +4,31 @@ import "./Modal.css";
 const Modal = ({ isOpen, onClose }) => {
   const [taskText, setTaskText] = useState("");
 
-  const handleSave = () => {
-    console.log("Task:", taskText);
-    onClose();
+  const handleAddTask = async () => {
+    const newTask = {
+      body: taskText,
+    };
+
+    try {
+      const response = await fetch("http://localhost:4000/api/todos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newTask), // Send the newTask object as the request body
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error adding task: ${response.statusText}`);
+      }
+
+      const createdTask = await response.json();
+
+      console.log(`Task added successfully:`, createdTask);
+      onClose(); // Close the modal after successful task addition
+    } catch (error) {
+      console.error(`Error adding task: ${error.message}`);
+    }
   };
 
   if (!isOpen) return null;
@@ -26,11 +48,11 @@ const Modal = ({ isOpen, onClose }) => {
             placeholder="Enter your task here"
             className="input input-bordered w-full h-[100px] mt-2 p-3"
             value={taskText}
-            onChange={(e) => setTaskText(e.target.value)}
+            onChange={(e) => setTaskText(e.target.value)} // Update taskText state on change
           />
         </label>
         <div className="flex items-center justify-center mt-4">
-          <button className="btn me-3" onClick={handleSave}>
+          <button className="btn me-3" onClick={handleAddTask}>
             Save
           </button>
           <button className="btn" onClick={onClose}>
