@@ -26,6 +26,11 @@ var collection *mongo.Collection
 func main() {
 
 	fmt.Println("App started..")
+	if os.Getenv("ENV") == "production" {
+		gin.SetMode(gin.ReleaseMode)
+	} else {
+		gin.SetMode(gin.DebugMode)
+	}
 
 	if os.Getenv("ENV") != "production" {
 		err := godotenv.Load(".env")
