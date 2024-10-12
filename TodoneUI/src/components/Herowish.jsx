@@ -29,6 +29,7 @@ const Herowish = () => {
         {greeting} Shalvin<span className="hero-wave">👋</span>
       </h1>
       <h3>Today, {date}</h3>
+      <i>"Focus on what matters, track the rest."</i>
     </div>
   );
 };
