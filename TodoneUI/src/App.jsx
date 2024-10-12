@@ -1,14 +1,20 @@
 import "./App.css";
-import Herowish from "./components/Herowish";
+import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
+import Newtask from "./components/Newtask";
 import Taskbox from "./components/Taskbox";
 
 function App() {
   return (
     <>
-      <Navbar />
-      <Herowish />
-      <Taskbox />
+      <div className="App">
+        <Navbar />
+        <div className="content pt-32 pb-28">
+          <Taskbox />
+          <Newtask />
+        </div>
+        <Footer />
+      </div>
     </>
   );
 }

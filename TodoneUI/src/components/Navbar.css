@@ -32,5 +32,17 @@
 }
 
 .hero-greet {
-  font-size: 2rem;
+  font-size: 1.2rem; /* Base font size */
+}
+
+@media (min-width: 768px) {
+  .hero-greet {
+    font-size: 1.875rem; /* Font size for medium screens and above */
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-greet {
+    font-size: 2.25rem; /* Font size for large screens and above */
+  }
 }

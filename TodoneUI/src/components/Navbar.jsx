@@ -1,11 +1,39 @@
 import React from "react";
 import noImage from "../../public/assets/no_image.svg";
+import "./Navbar.css";
 
 const Navbar = () => {
+  const today = new Date();
+  const hours = today.getHours();
+
+  // Format the date in words (e.g., "October 12, 2024")
+  const date = today.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  let greeting;
+
+  if (hours < 12) {
+    greeting = "Good morning";
+  } else if (hours < 18) {
+    greeting = "Good afternoon";
+  } else {
+    greeting = "Good evening";
+  }
   return (
-    <div className=" navbar flex-row	justify-between bg-base-100 p-2">
+    <div className="navbar fixed top-0 left-0 right-0 z-50 flex-row justify-between bg-base-100 shadow">
       <div>
-        <a className="btn btn-ghost text-xl">ToDone</a>
+        <a className="text-xl">ToDone</a>
+      </div>
+      <div className=" flex flex-col justify-center items-center p-2 bg-base-100">
+        <h1 className="hero-greet text-2xl md:text-3xl lg:text-4xl">
+          {greeting}<span className="hero-wave">👋</span>
+        </h1>
+
+        <i>Today, {date}</i>
       </div>
 
       <div>
