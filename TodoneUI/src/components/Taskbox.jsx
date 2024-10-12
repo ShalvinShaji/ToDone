@@ -3,6 +3,7 @@ import "./Taskbox.css";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import doneIcon from "../../public/assets/doneIcon.svg";
 import binIcon from "../../public/assets/binIcon.svg";
+import { BASE_URL } from "../App";
 
 const Taskbox = () => {
   const queryClient = useQueryClient();
@@ -15,7 +16,7 @@ const Taskbox = () => {
   } = useQuery({
     queryKey: ["todos"],
     queryFn: async () => {
-      const res = await fetch("http://localhost:4000/api/todos");
+      const res = await fetch({ BASE_URL } + "/todos");
       if (!res.ok) {
         throw new Error("Network response was not ok");
       }
@@ -27,7 +28,7 @@ const Taskbox = () => {
   // Mutation for deleting a task
   const deleteTaskMutation = useMutation({
     mutationFn: async (id) => {
-      const response = await fetch(`http://localhost:4000/api/todos/${id}`, {
+      const response = await fetch({ BASE_URL } + `/todos/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -46,7 +47,7 @@ const Taskbox = () => {
   // Mutation for completing a task
   const completeTaskMutation = useMutation({
     mutationFn: async (id) => {
-      const response = await fetch(`http://localhost:4000/api/todos/${id}`, {
+      const response = await fetch({ BASE_URL } + `/todos/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

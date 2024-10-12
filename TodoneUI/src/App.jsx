@@ -4,6 +4,11 @@ import Navbar from "./components/Navbar";
 import Newtask from "./components/Newtask";
 import Taskbox from "./components/Taskbox";
 
+export const BASE_URL =
+  import.meta.env.MODE === "development"
+    ? "http://localhost:4000/api"
+    : "/api";
+
 function App() {
   return (
     <>
