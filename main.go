@@ -26,7 +26,6 @@ var collection *mongo.Collection
 func main() {
 
 	fmt.Println("App started..")
-	
 
 	if os.Getenv("ENV") != "production" {
 		err := godotenv.Load(".env")
@@ -55,7 +54,7 @@ func main() {
 	app := gin.Default()
 
 	if os.Getenv("ENV") == "production" {
-		app.Static("/", "./TodoneUI/dist")
+		app.Static("/static", "./TodoneUI/dist")
 	}
 
 	app.GET("/api/todos", getTodo)
