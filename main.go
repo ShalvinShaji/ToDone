@@ -26,11 +26,7 @@ var collection *mongo.Collection
 func main() {
 
 	fmt.Println("App started..")
-	if os.Getenv("ENV") == "production" {
-		gin.SetMode(gin.ReleaseMode)
-	} else {
-		gin.SetMode(gin.DebugMode)
-	}
+	
 
 	if os.Getenv("ENV") != "production" {
 		err := godotenv.Load(".env")
@@ -58,15 +54,9 @@ func main() {
 
 	app := gin.Default()
 
-	// CORS Configuration
-	// app.Use(cors.New(cors.Config{
-	// 	AllowOrigins:     []string{"http://localhost:5174"},
-	// 	AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
-	// 	AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
-	// 	AllowCredentials: true,
-	// }))
-
-	
+	if os.Getenv("ENV") == "production" {
+		app.Static("/", "./TodoneUI/dist")
+	}
 
 	app.GET("/api/todos", getTodo)
 	app.POST("/api/todos", createTodo)
@@ -78,10 +68,10 @@ func main() {
 		port = "4000"
 	}
 
-	if os.Getenv("ENV") == "production" {
-		app.Static("/", "./TodoneUI/dist")
-	}
-	
+	// if os.Getenv("ENV") == "production" {
+	// 	app.Static("/", "./TodoneUI/dist")
+	// }
+
 	log.Fatal(app.Run("0.0.0.0:" + port))
 }
 
