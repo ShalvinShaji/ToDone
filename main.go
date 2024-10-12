@@ -66,9 +66,7 @@ func main() {
 	// 	AllowCredentials: true,
 	// }))
 
-	if os.Getenv("ENV") == "production" {
-		app.Static("/", "./ToDoneUI/dist")
-	}
+	
 
 	app.GET("/api/todos", getTodo)
 	app.POST("/api/todos", createTodo)
@@ -79,6 +77,11 @@ func main() {
 	if port == "" {
 		port = "4000"
 	}
+
+	if os.Getenv("ENV") == "production" {
+		app.Static("/", "./ToDoneUI/dist")
+	}
+	
 	log.Fatal(app.Run("0.0.0.0:" + port))
 }
 
